@@ -121,6 +121,10 @@ src/
 - No real payment processing — all forms are simulated
 - No user data is collected or stored
 
+## Contributors
+
+- **Shadi Alsalamat** — Design, Development & Research
+
 ## License
 
 This project is for educational and research purposes.
