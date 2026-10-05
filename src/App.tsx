@@ -17,8 +17,9 @@ import { ScreenReaderHud } from './components/ScreenReaderHud';
 import { UXEffectivenessDashboard } from './components/UXEffectivenessDashboard';
 import { ContributionShowcase } from './components/ContributionShowcase';
 import { ScreenReaderSimulator } from './components/ScreenReaderSimulator';
+import { UXIntelligencePanel } from './components/UXIntelligencePanel';
 import { calculateBookingPrice } from './utils/pricing';
-import { ShieldCheck, AlertTriangle, Scale, BookOpen, Activity, Star, Award, Monitor } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Scale, BookOpen, Activity, Star, Award, Monitor, Zap } from 'lucide-react';
 
 const STORAGE_KEY = 'fairreserve_progress';
 
@@ -46,6 +47,7 @@ export default function App() {
   const [fontScale, setFontScale] = useState<number>(100);
   const [showProgressRestored, setShowProgressRestored] = useState(false);
   const [showHierarchyOverlay, setShowHierarchyOverlay] = useState(false);
+  const [isIntelligencePanelOpen, setIsIntelligencePanelOpen] = useState(false);
 
   // Stay parameters
   const [checkInDate, setCheckInDate] = useState<string>('2026-10-14');
@@ -461,6 +463,15 @@ export default function App() {
         onSwitchMode={handleModeChange}
       />
 
+      {/* 12. UX Intelligence Panel */}
+      <UXIntelligencePanel
+        isOpen={isIntelligencePanelOpen}
+        onClose={() => setIsIntelligencePanelOpen(false)}
+        currentMode={mode}
+        currentStep={currentStep}
+        onSwitchMode={handleModeChange}
+      />
+
       {/* 11. Footer with Quick UX Conflict Jump Bar */}
       <footer className="bg-white border-t border-slate-200 py-6 px-4 sm:px-6 lg:px-8 mt-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
@@ -474,6 +485,14 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => setIsIntelligencePanelOpen(true)}
+              className="text-slate-100 hover:text-white font-bold flex items-center space-x-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-1 rounded-lg border border-violet-400 shadow-md hover:shadow-lg transition-all"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>UX Intelligence</span>
+            </button>
+            <span>•</span>
             <button
               onClick={() => setIsContributionShowcaseOpen(true)}
               className="text-violet-900 hover:text-violet-950 font-bold flex items-center space-x-1 bg-violet-50 px-2 py-0.5 rounded border border-violet-200 shadow-xs"
