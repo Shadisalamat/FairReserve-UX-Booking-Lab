@@ -1,0 +1,6 @@
+{
+  "name": "FairReserve - UX Conflict & Booking Lab",
+  "description": "An interactive booking application demonstrating and comparing Bad UX (dark patterns, friction, drip pricing) with Good UX (clarity, ethical design, transparency).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
