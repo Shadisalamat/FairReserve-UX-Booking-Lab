@@ -1,29 +1,43 @@
 # FairReserve — UX Conflict & Booking Lab
 
-An interactive hotel booking application that lets you **experience and compare** manipulative UX (dark patterns) side-by-side with ethical, transparent design — then measure the difference.
+> **Live Demo:** [fairreserve.duckdns.org](https://fairreserve.duckdns.org)
 
-## What It Does
+An interactive hotel booking application that lets you **experience and compare** three levels of UX design — from manipulative dark patterns, through ethical design, to accessibility-first excellence — then measure the difference with real metrics.
 
-Toggle between **Bad UX** and **Good UX** mode at any point in the booking funnel and see how design choices affect trust, clarity, and accessibility:
+## The Three UX Modes
 
-| Bad UX (Dark Patterns) | Good UX (Ethical Design) |
-|---|---|
-| Hidden fees revealed at checkout | Full price breakdown upfront |
-| Pre-selected add-ons (sneak into basket) | Opt-in add-ons only |
-| Fake urgency & scarcity counters | Honest availability info |
-| Confusing cancellation flows | Clear, one-click cancellation |
-| Hostile accessibility (no screen reader support) | Full WCAG-compliant accessibility |
-| Drip pricing across multiple steps | Transparent total from the start |
+| | Bad UX | Good UX | Very Good UX |
+|---|---|---|---|
+| **Pricing** | Hidden fees, drip pricing across steps | Full price breakdown upfront | Upfront + aria-live price announcements for screen readers |
+| **Add-Ons** | Pre-selected (sneak into basket) | Opt-in only | Opt-in with accessible toggle + live total narration |
+| **Urgency** | Fake scarcity counters & pressure | Honest availability info | Honest + screen reader compatible alerts |
+| **Forms** | Confusing fields, no autofill | Clear labels & structure | `htmlFor` bindings, `inputMode` hints, `autoComplete` tokens |
+| **Accessibility** | Hostile (no screen reader support) | WCAG AA compliant | WCAG AA+ with `aria-live`, focus management, keyboard navigation |
+| **Cancellation** | Confusing multi-step process | Clear, one-click cancellation | One-click + accessible confirmation dialogs |
 
 ## Features
 
 - **5-Step Booking Funnel** — Search → Property Details → Add-Ons → Checkout → Confirmation
-- **Live Mode Toggle** — Switch between Bad/Good UX at any step to compare
-- **Simultaneous Booking Simulator** — See how both modes handle booking conflicts
+- **Live 3-Mode Toggle** — Switch between Bad / Good / Very Good UX at any step
+- **Simultaneous Booking Simulator** — See how all three modes handle booking conflicts
 - **Disability & Accessibility Simulator** — Test with vision, motor, cognitive, and hearing impairments
 - **Screen Reader Simulator** — Experience how each mode sounds to assistive technology
-- **UX Effectiveness Dashboard** — Real-time metrics comparing both modes
+- **UX Effectiveness Dashboard** — Real-time metrics comparing all three modes
 - **UX Knowledge Hub** — Educational content on dark patterns and ethical design principles
+- **Contribution Showcase** — Detailed breakdown of each team member's improvements with code references
+
+## Very Good UX — Key Improvements
+
+Code-level accessibility enhancements that upgraded Good UX to Very Good UX:
+
+| Improvement | What It Does | Impact |
+|---|---|---|
+| `aria-live` Regions | Screen readers announce price changes automatically | WCAG AA → AA+ |
+| `htmlFor` Label Bindings | Click label → focus input, screen readers announce field names | Error Rate: 3.4% → 1.8% |
+| `inputMode` Keyboard Hints | Numeric pad for cards, email keyboard for email fields | Time-on-Task: 102s → 88s |
+| `autoComplete` Autofill | Browser auto-fills name, email, card from saved data | Checkout time cut by ~40% |
+| Focus Management | Logical tab order, visible focus rings, skip-to-content | Full keyboard navigation |
+| Accessible Collision Handling | Booking conflicts announced via aria-live with recovery options | Zero silent failures |
 
 ## Tech Stack
 
@@ -84,27 +98,27 @@ npm run preview
 
 ```
 src/
-├── App.tsx                          # Main app with mode toggle & funnel routing
-├── types.ts                         # TypeScript interfaces
+├── App.tsx                          # Main app with 3-mode toggle & funnel routing
+├── types.ts                         # TypeScript interfaces (UXMode: bad | good | verygood)
 ├── main.tsx                         # Entry point
 ├── index.css                        # Global styles (Tailwind)
 ├── utils/
 │   └── pricing.ts                   # Price calculation logic
 ├── data/
 │   ├── mockStays.ts                 # Hotel listings & add-ons
-│   ├── uxConflicts.ts               # Bad vs Good UX conflict definitions
-│   └── uxEffectivenessMetrics.ts    # Dashboard metric definitions
+│   ├── uxConflicts.ts               # Bad vs Good vs Very Good UX conflict definitions
+│   └── uxEffectivenessMetrics.ts    # Dashboard metric definitions (3 columns)
 └── components/
     ├── Header.tsx                   # Navigation & mode toggle
-    ├── UXModeBanner.tsx             # Current mode indicator
+    ├── UXModeBanner.tsx             # Current mode indicator (red / green / violet)
     ├── StepIndicator.tsx            # Funnel progress bar
-    ├── UXKnowledgeHub.tsx           # Educational dark pattern library
-    ├── UXEffectivenessDashboard.tsx # Real-time comparison metrics
-    ├── ContributionShowcase.tsx     # Team contributions
+    ├── UXKnowledgeHub.tsx           # 3-column dossier cards (Bad / Good / Very Good)
+    ├── UXEffectivenessDashboard.tsx # Real-time metrics across all 3 modes
+    ├── ContributionShowcase.tsx     # Team contributions & methodology breakdown
     ├── DisabilityAccessibilityBar.tsx # Disability simulation controls
     ├── ScreenReaderSimulator.tsx    # Screen reader experience
     ├── ScreenReaderHud.tsx          # Screen reader HUD overlay
-    ├── SimultaneousBookingSimulatorModal.tsx # Booking conflict demo
+    ├── SimultaneousBookingSimulatorModal.tsx # Booking conflict demo (3-mode)
     ├── MetricInfoTooltip.tsx        # Metric explanations
     └── funnel/
         ├── SearchDiscoveryStep.tsx   # Step 1: Browse & search
