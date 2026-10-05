@@ -84,3 +84,61 @@
 .a11y-motor-assistance a {
   min-height: 44px;
 }
+
+/* Visual Hierarchy Overlay */
+.hierarchy-overlay h1,
+.hierarchy-overlay h2,
+.hierarchy-overlay [class*="text-2xl"],
+.hierarchy-overlay [class*="text-3xl"] {
+  outline: 3px solid rgba(239, 68, 68, 0.6) !important;
+  outline-offset: 2px;
+  position: relative;
+}
+.hierarchy-overlay h1::after,
+.hierarchy-overlay [class*="text-3xl"]::after {
+  content: '1st — Eyes go here first';
+  position: absolute;
+  top: -18px;
+  right: 0;
+  font-size: 9px;
+  font-weight: 700;
+  background: #ef4444;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+.hierarchy-overlay h2::after,
+.hierarchy-overlay [class*="text-2xl"]::after {
+  content: '2nd';
+  position: absolute;
+  top: -18px;
+  right: 0;
+  font-size: 9px;
+  font-weight: 700;
+  background: #f59e0b;
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+.hierarchy-overlay button[class*="bg-emerald"],
+.hierarchy-overlay button[class*="bg-violet"],
+.hierarchy-overlay button[class*="bg-rose"] {
+  outline: 3px solid rgba(59, 130, 246, 0.6) !important;
+  outline-offset: 2px;
+}
+.hierarchy-overlay [aria-live] {
+  outline: 3px dashed rgba(139, 92, 246, 0.6) !important;
+  outline-offset: 2px;
+}
+.hierarchy-overlay img {
+  outline: 2px solid rgba(16, 185, 129, 0.5) !important;
+  outline-offset: 2px;
+}
+.hierarchy-overlay [class*="text-xs"],
+.hierarchy-overlay [class*="text-sm"] {
+  outline: 1px dotted rgba(148, 163, 184, 0.4) !important;
+}

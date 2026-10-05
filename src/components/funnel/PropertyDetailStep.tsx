@@ -85,12 +85,50 @@ export const PropertyDetailStep: React.FC<PropertyDetailStepProps> = ({
     }
   };
 
+  // Date validation: prevent checkout before checkin (Very Good UX: inline prevention)
+  const [dateWarning, setDateWarning] = useState<string | null>(null);
+
+  const handleDayClickSafe = (day: number) => {
+    if (day <= 10) return;
+    if (day === selectedStartDay) return;
+
+    if (day < selectedStartDay) {
+      setSelectedStartDay(day);
+      const n = selectedEndDay - day;
+      if (n <= 0) {
+        setDateWarning('Check-out must be after check-in. Adjusting automatically.');
+        const newEnd = day + 1;
+        setSelectedEndDay(newEnd);
+        onDatesChange(`2026-10-${day}`, `2026-10-${newEnd}`, 1);
+        setTimeout(() => setDateWarning(null), 3000);
+      } else {
+        setDateWarning(null);
+        onDatesChange(`2026-10-${day}`, `2026-10-${selectedEndDay}`, n);
+      }
+    } else {
+      setDateWarning(null);
+      setSelectedEndDay(day);
+      const n = day - selectedStartDay;
+      onDatesChange(`2026-10-${selectedStartDay}`, `2026-10-${day}`, n);
+    }
+  };
+
   // Bad UX submit check
   const handleBadUxSubmit = () => {
-    // Check if format is MM/DD/YYYY
     const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
     if (!dateRegex.test(badCheckIn) || !dateRegex.test(badCheckOut)) {
       setBadDateError('INPUT REJECTED: Date must strictly conform to MM/DD/YYYY syntax. Inputs cleared for security.');
+      setBadCheckIn('');
+      setBadCheckOut('');
+      return;
+    }
+    // Parse and validate order
+    const [inM, inD, inY] = badCheckIn.split('/').map(Number);
+    const [outM, outD, outY] = badCheckOut.split('/').map(Number);
+    const inDate = new Date(inY, inM - 1, inD);
+    const outDate = new Date(outY, outM - 1, outD);
+    if (outDate <= inDate) {
+      setBadDateError('CRITICAL ERROR: Check-out date cannot be before or same as check-in. All fields cleared.');
       setBadCheckIn('');
       setBadCheckOut('');
       return;
@@ -236,7 +274,7 @@ export const PropertyDetailStep: React.FC<PropertyDetailStepProps> = ({
                         key={day}
                         type="button"
                         disabled={isPastOrSold}
-                        onClick={() => handleDayClick(day)}
+                        onClick={() => handleDayClickSafe(day)}
                         {...(mode === 'verygood' && {
                           'aria-label': `October ${day}, $${dayPrice} per night${isSelectedStart ? ', check-in date' : isSelectedEnd ? ', check-out date' : isInRange ? ', in selected range' : ''}${isPastOrSold ? ', unavailable' : ''}`,
                           'aria-pressed': isSelectedStart || isSelectedEnd,
@@ -270,6 +308,14 @@ export const PropertyDetailStep: React.FC<PropertyDetailStepProps> = ({
                   })}
                 </div>
               </div>
+
+              {/* Date Validation Warning (Very Good UX: error prevention) */}
+              {dateWarning && (
+                <div className="mt-3 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs text-amber-800 font-semibold flex items-center space-x-2" role="alert" aria-live="assertive">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{dateWarning}</span>
+                </div>
+              )}
 
               {/* Ethical Assurance Strip */}
               <div className="mt-5 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FunnelStep, UXMode } from '../types';
-import { Check, ArrowLeft, AlertCircle, HelpCircle } from 'lucide-react';
+import { Check, ArrowLeft, AlertCircle, HelpCircle, Clock } from 'lucide-react';
 
 interface StepIndicatorProps {
   currentStep: FunnelStep;
@@ -10,10 +10,10 @@ interface StepIndicatorProps {
 }
 
 const STEPS: { id: FunnelStep; label: string; timeEstimate: string }[] = [
-  { id: 'browse', label: '1. Discover Stays', timeEstimate: '30s' },
-  { id: 'details', label: '2. Dates & Room', timeEstimate: '45s' },
-  { id: 'addons', label: '3. Optional Add-ons', timeEstimate: '20s' },
-  { id: 'checkout', label: '4. Guest & Payment', timeEstimate: '1m' },
+  { id: 'browse', label: '1. Discover Stays', timeEstimate: '~30s' },
+  { id: 'details', label: '2. Dates & Room', timeEstimate: '~45s' },
+  { id: 'addons', label: '3. Optional Add-ons', timeEstimate: '~20s' },
+  { id: 'checkout', label: '4. Guest & Payment', timeEstimate: '~1 min' },
   { id: 'confirmation', label: '5. Confirmation', timeEstimate: 'Done' }
 ];
 
@@ -32,14 +32,22 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
         {/* Navigation / Back Action */}
         <div className="flex items-center space-x-2">
           {currentIndex > 0 && currentStep !== 'confirmation' && (
-            <button
-              id="btn-nav-back"
-              onClick={() => onNavigateStep(STEPS[currentIndex - 1].id)}
-              className="inline-flex items-center space-x-1 text-xs font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition border border-slate-200"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to {STEPS[currentIndex - 1].label.split('. ')[1]}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                id="btn-nav-back"
+                onClick={() => onNavigateStep(STEPS[currentIndex - 1].id)}
+                className="inline-flex items-center space-x-1 text-xs font-semibold text-slate-600 hover:text-slate-900 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition border border-slate-200"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to {STEPS[currentIndex - 1].label.split('. ')[1]}</span>
+              </button>
+              {mode === 'bad' && (
+                <span className="text-[10px] text-rose-600 font-semibold">⚠ Going back erases your form data!</span>
+              )}
+              {(mode === 'good' || mode === 'verygood') && (
+                <span className="text-[10px] text-emerald-600 font-semibold">✓ Your data is saved</span>
+              )}
+            </div>
           )}
 
           {mode === 'good' ? (
@@ -96,6 +104,12 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({
                     {isCompleted ? <Check className="w-3 h-3" /> : idx + 1}
                   </span>
                   <span className="whitespace-nowrap">{displayLabel}</span>
+                  {isCurrent && (mode === 'good' || mode === 'verygood') && step.timeEstimate !== 'Done' && (
+                    <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] opacity-80 font-normal">
+                      <Clock className="w-2.5 h-2.5" />
+                      {step.timeEstimate}
+                    </span>
+                  )}
                 </button>
                 {idx < STEPS.length - 1 && (
                   <div className="w-3 sm:w-6 h-0.5 bg-slate-200 shrink-0" />

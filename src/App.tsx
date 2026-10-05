@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { UXMode, FunnelStep, Stay, BookingFormState, DisabilitySettings } from './types';
 import { MOCK_STAYS, AVAILABLE_ADDONS } from './data/mockStays';
 import { UX_CONFLICTS } from './data/uxConflicts';
@@ -20,10 +20,32 @@ import { ScreenReaderSimulator } from './components/ScreenReaderSimulator';
 import { calculateBookingPrice } from './utils/pricing';
 import { ShieldCheck, AlertTriangle, Scale, BookOpen, Activity, Star, Award, Monitor } from 'lucide-react';
 
+const STORAGE_KEY = 'fairreserve_progress';
+
+function loadProgress(): { step?: FunnelStep; form?: Partial<BookingFormState>; stayId?: string; addons?: string[] } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveProgress(step: FunnelStep, form: BookingFormState, stayId: string, addons: string[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, form, stayId, addons }));
+  } catch {}
+}
+
+function clearProgress() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
+}
+
 export default function App() {
   const [mode, setMode] = useState<UXMode>('good');
   const [currentStep, setCurrentStep] = useState<FunnelStep>('browse');
   const [selectedStay, setSelectedStay] = useState<Stay>(MOCK_STAYS[0]);
+  const [fontScale, setFontScale] = useState<number>(100);
+  const [showProgressRestored, setShowProgressRestored] = useState(false);
+  const [showHierarchyOverlay, setShowHierarchyOverlay] = useState(false);
 
   // Stay parameters
   const [checkInDate, setCheckInDate] = useState<string>('2026-10-14');
@@ -82,6 +104,35 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Progress Save: restore on mount (Very Good UX feature)
+  useEffect(() => {
+    const saved = loadProgress();
+    if (saved && saved.step && saved.step !== 'browse' && saved.step !== 'confirmation') {
+      setCurrentStep(saved.step);
+      if (saved.form) setFormState(prev => ({ ...prev, ...saved.form }));
+      if (saved.stayId) {
+        const stay = MOCK_STAYS.find(s => s.id === saved.stayId);
+        if (stay) setSelectedStay(stay);
+      }
+      if (saved.addons) setSelectedAddOnIds(saved.addons);
+      setShowProgressRestored(true);
+      setTimeout(() => setShowProgressRestored(false), 4000);
+    }
+  }, []);
+
+  // Progress Save: auto-save on step/form changes (only in good/verygood modes)
+  useEffect(() => {
+    if (mode === 'good' || mode === 'verygood') {
+      saveProgress(currentStep, formState, selectedStay.id, selectedAddOnIds);
+    }
+  }, [currentStep, formState, selectedStay.id, selectedAddOnIds, mode]);
+
+  // Font scale: apply to document
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontScale}%`;
+    return () => { document.documentElement.style.fontSize = ''; };
+  }, [fontScale]);
+
   // Disability & Accessibility Mode Settings
   const [disabilitySettings, setDisabilitySettings] = useState<DisabilitySettings>({
     enabled: false,
@@ -133,6 +184,24 @@ export default function App() {
     );
   };
 
+  // Navigate step with form preservation (Very Good) or wipe (Bad)
+  const handleNavigateStep = useCallback((step: FunnelStep) => {
+    if (mode === 'bad') {
+      // Bad UX: wipe form data when going back
+      const order: FunnelStep[] = ['browse', 'details', 'addons', 'checkout', 'confirmation'];
+      const currentIdx = order.indexOf(currentStep);
+      const targetIdx = order.indexOf(step);
+      if (targetIdx < currentIdx) {
+        setFormState(prev => ({
+          ...prev,
+          firstName: '', lastName: '', email: '', phone: '',
+          cardNumber: '', cardExpiry: '', cardCvc: '',
+        }));
+      }
+    }
+    setCurrentStep(step);
+  }, [mode, currentStep]);
+
   // Reset entire flow
   const handleReset = () => {
     setCurrentStep('browse');
@@ -166,6 +235,7 @@ export default function App() {
         notes: ''
       }
     });
+    clearProgress();
   };
 
   const handleFormChange = (updated: Partial<BookingFormState>) => {
@@ -198,8 +268,16 @@ export default function App() {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={`min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500 selection:text-white ${a11yClasses}`}>
+    <div className={`min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500 selection:text-white ${a11yClasses} ${showHierarchyOverlay ? 'hierarchy-overlay' : ''}`}>
       
+      {/* Progress Restored Toast (Very Good UX) */}
+      {showProgressRestored && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-violet-600 text-white px-5 py-2.5 rounded-xl shadow-lg text-sm font-semibold flex items-center space-x-2 animate-pulse-subtle">
+          <span>✓ Progress restored — continuing from where you left off</span>
+          <button onClick={() => { setShowProgressRestored(false); handleReset(); }} className="ml-2 underline text-xs opacity-80 hover:opacity-100">Start over</button>
+        </div>
+      )}
+
       {/* 1. Global Header with UX Mode Switcher */}
       <Header
         mode={mode}
@@ -213,6 +291,8 @@ export default function App() {
         disabilitySettings={disabilitySettings}
         onOpenDisabilityBar={() => setIsDisabilityModalOpen(true)}
         activeConflictsCount={UX_CONFLICTS.length}
+        fontScale={fontScale}
+        onFontScaleChange={setFontScale}
       />
 
       {/* 2. Live Diagnostic Mode Banner & Dark Pattern Indicator */}
@@ -230,7 +310,7 @@ export default function App() {
       <StepIndicator
         currentStep={currentStep}
         mode={mode}
-        onNavigateStep={step => setCurrentStep(step)}
+        onNavigateStep={handleNavigateStep}
         canNavigateTo={canNavigateTo}
       />
 
@@ -438,6 +518,17 @@ export default function App() {
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>Explore All 8 Booking UX Conflicts</span>
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setShowHierarchyOverlay(prev => !prev)}
+              className={`font-bold flex items-center space-x-1 px-2 py-0.5 rounded border shadow-xs ${
+                showHierarchyOverlay
+                  ? 'bg-red-100 text-red-800 border-red-300'
+                  : 'bg-slate-50 text-slate-700 border-slate-200'
+              }`}
+            >
+              <span>{showHierarchyOverlay ? '🔴' : '👁'} Visual Hierarchy</span>
             </button>
             <span>•</span>
             <button

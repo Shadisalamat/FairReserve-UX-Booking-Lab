@@ -27,6 +27,8 @@ interface HeaderProps {
   disabilitySettings?: DisabilitySettings;
   onOpenDisabilityBar?: () => void;
   activeConflictsCount: number;
+  fontScale?: number;
+  onFontScaleChange?: (scale: number) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,7 +42,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenContributionShowcase,
   disabilitySettings,
   onOpenDisabilityBar,
-  activeConflictsCount
+  activeConflictsCount,
+  fontScale = 100,
+  onFontScaleChange,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-colors duration-200">
@@ -228,6 +232,31 @@ export const Header: React.FC<HeaderProps> = ({
                 {activeConflictsCount}
               </span>
             </button>
+
+            {/* Text Resize Controls (Accessibility — Very Good UX) */}
+            {onFontScaleChange && (
+              <div className="flex items-center bg-slate-100 rounded-lg border border-slate-200 overflow-hidden" role="group" aria-label="Text size controls">
+                <button
+                  onClick={() => onFontScaleChange(Math.max(80, fontScale - 10))}
+                  disabled={fontScale <= 80}
+                  className="px-2 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30 transition"
+                  aria-label="Decrease text size"
+                  title="Decrease text size"
+                >
+                  A−
+                </button>
+                <span className="px-1.5 text-[10px] font-mono text-slate-500 border-x border-slate-200">{fontScale}%</span>
+                <button
+                  onClick={() => onFontScaleChange(Math.min(140, fontScale + 10))}
+                  disabled={fontScale >= 140}
+                  className="px-2 py-1.5 text-sm font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30 transition"
+                  aria-label="Increase text size"
+                  title="Increase text size"
+                >
+                  A+
+                </button>
+              </div>
+            )}
 
             <button
               id="btn-reset-flow"
